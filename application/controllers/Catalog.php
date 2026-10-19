@@ -38,7 +38,7 @@ class Catalog extends Public_Controller {
 
 		$data = $this->page_data(array(
 			'title'     => $category ? $category->name : 'Katalog',
-			'products'  => $this->product_model->catalog($filters, self::PER_PAGE, $offset),
+			'products'  => $this->product_model->attach_sold($this->product_model->catalog($filters, self::PER_PAGE, $offset)),
 			'filters'   => $filters,
 			'total'     => $total,
 			'page'      => $page,
@@ -58,6 +58,7 @@ class Catalog extends Public_Controller {
 		{
 			show_404();
 		}
+		$this->product_model->attach_sold_one($product);
 
 		$data = $this->page_data(array(
 			'title'   => $product->name,

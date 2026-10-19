@@ -14,7 +14,7 @@ class Home extends Public_Controller {
 	{
 		$data = $this->page_data(array(
 			'title'    => 'Beranda',
-			'products' => $this->product_model->latest_active(8),
+			'products' => $this->product_model->attach_sold($this->product_model->latest_active(8)),
 		));
 		$this->load->view('templates/header', $data);
 		$this->load->view('home/index', $data);

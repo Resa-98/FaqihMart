@@ -67,11 +67,14 @@ $route['keranjang']               = 'cart/index';
 $route['cart/add']                = 'cart/add';
 $route['cart/update']             = 'cart/update';
 $route['cart/remove']             = 'cart/remove';
+$route['cart/beli-sekarang']      = 'cart/buy_now';
 
 // Checkout
 $route['checkout']                = 'checkout/index';
 $route['checkout/proses']         = 'checkout/process';
+$route['checkout/batal-beli']     = 'checkout/cancel_buy_now';
 $route['konfirmasi']              = 'checkout/confirmation';
+$route['konfirmasi/struk']        = 'checkout/receipt';
 
 // Admin
 $route['admin/login']             = 'auth/login';
@@ -91,5 +94,11 @@ $route['admin/kategori/ubah/(:num)'] = 'admin/categories/edit/$1';
 $route['admin/kategori/ubah/(:num)/proses'] = 'admin/categories/process_edit/$1';
 $route['admin/kategori/hapus/(:num)'] = 'admin/categories/delete/$1';
 $route['admin/pesanan']           = 'admin/orders/index';
+$route['admin/pesanan/(:any)/struk'] = 'admin/orders/receipt/$1';
 $route['admin/pesanan/(:any)']    = 'admin/orders/detail/$1';
 $route['admin/pesanan/(:any)/status'] = 'admin/orders/update_status/$1';
+$route['admin/kelola-admin']      = 'admin/admins/index';
+$route['admin/kelola-admin/whatsapp'] = 'admin/admins/update_whatsapp';
+$route['admin/kelola-admin/akun'] = 'admin/admins/update_credentials';
+$route['admin/kelola-admin/tambah'] = 'admin/admins/create';
+$route['admin/kelola-admin/hapus/(:num)'] = 'admin/admins/delete/$1';

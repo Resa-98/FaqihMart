@@ -60,6 +60,27 @@ class Orders extends Admin_Controller {
 		$this->load->view('admin/templates/footer', $data);
 	}
 
+	/** Struk digital yang bisa dicetak (dari panel admin). */
+	public function receipt($order_number)
+	{
+		$order = $this->order_model->find_by_number($order_number);
+		if ( ! $order)
+		{
+			show_404();
+		}
+
+		$data = array(
+			'store_name' => $this->config->item('store_name'),
+			'store_area' => $this->config->item('store_area'),
+			'order'      => $order,
+			'items'      => $this->order_model->items($order->id),
+			'statuses'   => order_statuses(),
+			'back_url'   => site_url('admin/pesanan/' . $order->order_number),
+			'back_label' => 'Kembali ke detail pesanan',
+		);
+		$this->load->view('receipt/print', $data);
+	}
+
 	/** POST: transisi status. */
 	public function update_status($order_number)
 	{

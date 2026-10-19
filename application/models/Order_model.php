@@ -14,7 +14,7 @@ class Order_model extends CI_Model {
 	 * - Item disimpan sebagai snapshot (nama + harga), riwayat tetap utuh
 	 *   walau produk diedit/dihapus.
 	 *
-	 * @param array $customer ['customer_name','whatsapp','address','note']
+	 * @param array $customer ['customer_name','whatsapp','address','note','map_link','latitude','longitude']
 	 * @param array $cart     [product_id => qty]
 	 * @return array ['ok'=>bool,'error'=>string,'order'=>obj]
 	 */
@@ -78,6 +78,9 @@ class Order_model extends CI_Model {
 			'whatsapp'      => $customer['whatsapp'],
 			'address'       => $customer['address'],
 			'note'          => $customer['note'],
+			'map_link'      => ! empty($customer['map_link']) ? $customer['map_link'] : NULL,
+			'latitude'      => isset($customer['latitude']) && $customer['latitude'] !== NULL ? $customer['latitude'] : NULL,
+			'longitude'     => isset($customer['longitude']) && $customer['longitude'] !== NULL ? $customer['longitude'] : NULL,
 			'total_amount'  => $total,
 			'status'        => 'menunggu_konfirmasi',
 		));

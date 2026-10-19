@@ -27,8 +27,9 @@ class Auth extends CI_Controller {
 		}
 
 		$data = array(
-			'title' => 'Login Admin',
-			'error' => $this->session->flashdata('error'),
+			'title'      => 'Login Admin',
+			'store_name' => $this->config->item('store_name'),
+			'error'      => $this->session->flashdata('error'),
 		);
 		$this->load->view('admin/login', $data);
 	}

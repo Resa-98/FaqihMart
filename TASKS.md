@@ -83,3 +83,80 @@ Sumber manajemen task. Perbarui setiap tahap benar-benar selesai.
 
 ## Task Berikutnya
 - Selesai. Pra go-live (manual, di luar scope coding): ganti placeholder harga via admin, nomor WA & kredensial admin, lalu uji di browser sungguhan.
+
+## Pembaruan UI — Logo, Favicon, Tipografi & Mobile (2026-10-19)
+- [x] Aset brand: `assets/images/brand/primary-logo.webp` (logo navbar), `icon-logo.png` (favicon), `icon-logo.webp`
+- [x] Logo `primary-logo` dipasang di navbar toko, navbar admin, footer toko, dan halaman login admin
+- [x] Favicon `icon-logo` + apple-touch-icon di ketiga header (toko, admin, login)
+- [x] Tipografi: font **Plus Jakarta Sans** (Google Fonts) + skala konsisten (judul `text-2xl font-bold tracking-tight`, sub-judul `text-xl/4xl`, angka `tabular-nums`)
+- [x] Navbar diubah menjadi **putih bersih** (logo berlatar putih jadi menyatu profesional) dengan aksen hijau; strip kategori abu-abu di desktop
+- [x] **Hamburger menu** (SVG inline + script vanilla, tanpa library) di navbar toko & admin untuk layar < 768px
+- [x] Tabel admin (produk, pesanan, kategori, dashboard) → **kartu vertikal di mobile**, tabel di ≥ sm
+- [x] Keranjang: kontrol qty + subtotal menumpuk rapi di mobile; ringkasan `sticky` di desktop
+- [x] Chip filter kategori jadi horizontal-scroll di mobile
+- [x] Detail produk: breadcrumb, harga lebih tegas, layout menumpuk di mobile
+- [x] Kartu produk: sudut `rounded-xl`, hover zoom gambar, tombol lebih besar (nyaman disentuh)
+- Verifikasi: `php -l` semua view bersih; semua route 200; aset logo/favicon HTTP 200; nol error box
+- Catatan: `Auth::login()` ditambah `store_name` (dipakai view login baru)
+
+## Pembaruan Logika Bisnis & UX (2026-10-19)
+Fokus: belanja lebih cepat, transparansi stok/penjualan, validasi kontak, lokasi kirim, dan struk.
+
+- [x] **Beli Sekarang** di setiap kartu produk & detail → langsung ke checkout untuk 1 produk itu saja
+      (session `buy_now` terpisah; **keranjang tidak diubah**; ada tombol "Batal Beli Sekarang" di checkout)
+- [x] Tombol **Beli Sekarang** diletakkan bersebelahan dengan tombol tambah keranjang
+- [x] Tombol "Tambah keranjang" diganti ikon **"+"** modern (aria-label & title tetap "Tambah ke keranjang")
+- [x] Klik **"+" / tambah keranjang tetap di halaman** katalog/detail:
+      AJAX (JSON) + refresh token CSRF; fallback tanpa-JS memakai field `return`
+- [x] **Counter jumlah** (numeric, tombol − / +) di kartu produk & halaman detail
+- [x] **"Terjual N"** dengan logika nyata: `SUM(order_items.quantity)` untuk pesanan **bukan** `dibatalkan`;
+      hanya ditampilkan bila benar-benar > 0
+- [x] Keranjang: **total dihitung ulang real-time** saat qty diubah
+      (subtotal per baris + total grand di browser)
+- [x] Qty keranjang > stok → **alert konfirmasi** ("Stok tersedia hanya N, ubah jumlah menjadi N?")
+      lalu di-clamp; juga dicek ulang di server
+- [x] Update keranjang **via AJAX** supaya sesi & tampilan tidak pernah beda (tanpa reload); fallback POST biasa
+- [x] Checkout: **validasi nomor WhatsApp diperbaiki** — normalisasi `+62`/`62`/`0`/spasi/tanda hubung
+      ke `08xxxxxxxxxx` lalu divalidasi `^08[0-9]{8,11}$`; pesan error Bahasa Indonesia
+- [x] **"Gunakan lokasi saya"** (geolocation) + input link Google Maps di checkout;
+      disimpan ke `orders.map_link/latitude/longitude` dan **tampil di panel admin** (tombol buka Google Maps)
+- [x] Link Maps juga divalidasi (hanya domain Google Maps) & koordinat diekstrak dari `@lat,lng`, `?q=`, `!3d..!4d`
+- [x] **Struk digital** yang bisa dicetak: `konfirmasi/struk` (pelanggan) & `admin/pesanan/{no}/struk`
+      → view bersama `receipt/print.php` + tombol `window.print()`
+- [x] Tombol **"Lihat / Cetak Struk"** di halaman konfirmasi & **"Cetak Struk"** di detail pesanan admin
+- [x] Aset baru: `assets/js/app.js` (toast, format Rupiah, counter, AJAX keranjang, geolocation) — tanpa library
+- Verifikasi (Apache + curl): AJAX add/update JSON + token CSRF baru; clamp stok add & update; buy-now →
+      checkout hanya 1 item (Rp20.000) sedangkan keranjang tetap; batal buy-now kembali ke keranjang;
+      WhatsApp `+62 812-3456-789` → `08123456789`; link Maps non-Google & WA tidak valid **ditolak** (pesan ID, 0 pesanan);
+      koordinat terekstrak dari URL & dari input geolocation; struk pelanggan & admin 200;
+      `php -l` bersih (controller, model, helper, view); nol error PHP di semua halaman; **DB dikembalikan ke state awal**
+- Catatan: `orders.map_link/latitude/longitude` ditambah di DB live + `database.sql`
+
+## Fitur Kelola Admin (2026-10-19)
+Menu admin baru **Admin → Kelola Admin** (`admin/kelola-admin`) dengan tiga bagian.
+
+- [x] **Nomor WhatsApp tujuan konfirmasi** — disimpan di tabel `settings` (key `store_whatsapp`),
+      bisa diubah kapan saja dari panel tanpa edit file; input dinormalisasi ke format internasional `62…`
+      (menerima `0812…`, `62812…`, `+62 812-…`), divalidasi, dan ada pratinjau `+62 812-3456-7890`
+- [x] Nomor ini **dipakai di seluruh aplikasi**: tombol *Konfirmasi via WhatsApp* (halaman konfirmasi + checkout)
+      dan tautan kontak di halaman **Informasi** — sumber tunggal `store_whatsapp()`
+- [x] **Ubah username & password akun sendiri** — wajib konfirmasi **password saat ini**;
+      password baru opsional (min. 8 karakter, harus diketik dua kali); hash `password_hash`;
+      session diperbarui + `sess_regenerate()` setelah ganti password
+- [x] **Daftar akun admin** — tabel (desktop) / kartu (mobile): username, tanggal dibuat, penanda "Anda";
+      bisa **tambah akun** (username 3–60 karakter `[A-Za-z0-9._-]`, password min. 8, unik) dan **hapus akun**
+- [x] Pengaman: tidak bisa menghapus akun yang sedang login & tidak bisa menghapus admin terakhir;
+      semua aksi pengubah data hanya lewat **POST + CSRF** (`form_open`), PRG + flashdata
+- [x] Fallback aman: `store_whatsapp()` memakai config `store.php` bila tabel `settings` belum ada
+      (DB lama tidak error di halaman checkout)
+- Berkas baru: `application/models/Setting_model.php`, `application/controllers/admin/Admins.php`,
+  `application/views/admin/admins/index.php`; helper `wa_international()`, `wa_display()`, `store_whatsapp()`
+- Verifikasi (Apache + curl): halaman 200 & nol error PHP; simpan nomor → tersimpan `6281298765432`, nomor
+  tidak valid ditolak (nilai lama tetap); perubahan langsung tampil di halaman Informasi & checkout;
+  ubah username/password terverifikasi lewat `password_verify` (salah password ditolak, hash lama tetap);
+  tambah/hapus akun berjalan, username duplikat/karakter salah/password pendek/konfirmasi beda **ditolak**;
+  hapus akun sendiri & akun tak ada ditolak dengan pesan yang benar; akses tanpa login diarahkan ke login;
+  GET pada endpoint POST dialihkan; `php -l` 66 berkas bersih; `database.sql` diimpor ke **DB sementara**
+  (7 tabel + seed `settings` benar, lalu dihapus) — DB live tidak disentuh
+- Catatan: tabel `settings` (`name` PK, `value`, `updated_at`) ditambah di DB live + `database.sql`;
+  nomor WhatsApp kini bersumber dari DB (seed `6281234567890`), config `store.php` hanya default fallback

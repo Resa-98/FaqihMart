@@ -1,7 +1,8 @@
 -- Faqih Mart - database.sql
 -- Schema MVP + seed. Import sekali ke database baru: mysql -u root faqihmart < database.sql
 -- Catatan seed: harga placeholder Rp10.000 dan stok 10 untuk SEMUA produk (edit via admin).
--- Nomor WhatsApp toko placeholder ada di application/config/store.php, bukan di database.
+-- Nomor WhatsApp tujuan konfirmasi disimpan di tabel `settings` (diubah lewat Admin > Kelola Admin);
+-- nilai awalnya seed di bawah, dan default fallback ada di application/config/store.php.
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
@@ -11,6 +12,7 @@ DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS categories;
 DROP TABLE IF EXISTS admins;
+DROP TABLE IF EXISTS settings;
 
 CREATE TABLE categories (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -46,6 +48,9 @@ CREATE TABLE orders (
   whatsapp VARCHAR(25) NOT NULL,
   address TEXT NOT NULL,
   note TEXT NULL,
+  map_link VARCHAR(500) NULL,
+  latitude DECIMAL(10,7) NULL,
+  longitude DECIMAL(10,7) NULL,
   total_amount DECIMAL(14,2) NOT NULL,
   status VARCHAR(30) NOT NULL DEFAULT 'menunggu_konfirmasi',
   created_at DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
@@ -77,7 +82,18 @@ CREATE TABLE admins (
   UNIQUE KEY uq_admins_username (username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE settings (
+  name VARCHAR(100) NOT NULL,
+  value TEXT NULL,
+  updated_at DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- Seed pengaturan toko (mis. nomor WhatsApp tujuan konfirmasi pesanan)
+INSERT INTO settings (name, value) VALUES
+('store_whatsapp', '6281234567890');
 
 -- Seed kategori (hanya yang berisi gambar; folder kosong tidak dibuat agar tidak ada halaman kategori kosong)
 INSERT INTO categories (id, name, slug, is_active, created_at) VALUES

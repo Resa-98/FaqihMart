@@ -88,6 +88,71 @@ class Product_model extends CI_Model {
 			->result();
 	}
 
+	/**
+	 * Jumlah terjual per produk: total kuantitas di order_items dari pesanan
+	 * yang TIDAK dibatalkan (pesanan batal = stok dikembalikan, bukan penjualan).
+	 *
+	 * @param  int[] $ids
+	 * @return array [product_id => qty_terjual]
+	 */
+	public function sold_counts(array $ids)
+	{
+		$ids = array_values(array_unique(array_filter(array_map('intval', $ids))));
+		if (empty($ids))
+		{
+			return array();
+		}
+
+		$rows = $this->db->select('oi.product_id, SUM(oi.quantity) AS sold', FALSE)
+			->from('order_items oi')
+			->join('orders o', 'o.id = oi.order_id')
+			->where_in('oi.product_id', $ids)
+			->where('o.status !=', 'dibatalkan')
+			->group_by('oi.product_id')
+			->get()
+			->result();
+
+		$out = array();
+		foreach ($rows as $row)
+		{
+			$out[(int) $row->product_id] = (int) $row->sold;
+		}
+		return $out;
+	}
+
+	/**
+	 * Tempelkan properti ->sold ke tiap produk (0 kalau belum pernah terjual).
+	 * Objek stdClass bersifat by-reference, jadi array yang sama ikut terubah.
+	 */
+	public function attach_sold(array $products)
+	{
+		$ids = array();
+		foreach ($products as $p)
+		{
+			if (isset($p->id))
+			{
+				$ids[] = (int) $p->id;
+			}
+		}
+		$map = $this->sold_counts($ids);
+		foreach ($products as $p)
+		{
+			$p->sold = isset($map[(int) $p->id]) ? $map[(int) $p->id] : 0;
+		}
+		return $products;
+	}
+
+	/** Hanya untuk satu produk (detail). */
+	public function attach_sold_one($product)
+	{
+		if ($product && isset($product->id))
+		{
+			$map = $this->sold_counts(array($product->id));
+			$product->sold = isset($map[(int) $product->id]) ? $map[(int) $product->id] : 0;
+		}
+		return $product;
+	}
+
 	// ------------------------------------------------------------------
 	// Admin
 	// ------------------------------------------------------------------
